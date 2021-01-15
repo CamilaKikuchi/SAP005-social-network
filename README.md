@@ -30,9 +30,9 @@ O objetivo do nosso projeto é desenvolver uma rede social destinada ao público
 
 ## 4. Ferramentas utilizadas
 
-* Firebase & Firestore
 * Vanilla JS
 * HTML 5
+* Firebase & Firestore
 * CSS
 * Git e GitHub
 * Visual Studio Code
