@@ -1,91 +1,300 @@
-import { onNavigate } from '../../utils/history.js';
+import {
+    loggedUser,
+    createPost,
+    signOut,
+    deletePost,
+    updatePost,
+    updateLike,
+    updateComments,
+} from '../../services/index.js'
 
 export const Timeline = () => {
-    //fazer evento de carregar a pagina: listener("load") (parametro de verificação = onAuthStateChanged) +
-    //se estiver logado,onNavigate(timeline) e loadPost, caso contrario, onNavigate('/login')
-
-    window.addEventListener("load", event => {
-        event.preventDefault();
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (user) { 
-                onNavigate('/timeline');
-                loadPost()
-            } else {
-                onNavigate('/login');
-            }
-        });
-    })}
-    const rootElement = document.createElement("main");
-    const timelineContainer = `
-        <header class="header-tml"></header>
-            <div class="container">
-                <section class="form-post">
-                    <form id="box-form">
-                    <label for="avatar">Choose a profile picture:</label>
-                        <input type="file" id="box-img" name=""
-                        accept="image/png, image/jpeg">
-                        <input type="text" id="box-caption"></input>
-                        <button type="submit" id="box-publish">Publicar</button>
-                    </form>
-                </section>
-                <section id="feed-post"></section>
+    
+        const container = document.createElement('div');
+      
+        container.className = ('feed-wrapper');
+      
+        container.innerHTML = `
+          <header id='top-menu-home-wrapper' class='top-menu-wrapper'>
+            <div id='top-menu-home-icon' class='top-menu-icon'>
+              <a href='javascript:void(0);' id='menu-icon-home' class='icon'>
+              <i class="fa fa-bars"</i>
+              </a>
             </div>
-    `
-    rootElement.innerHTML = timelineContainer;
-        const publishPost = rootElement.querySelector("#box-form");
-        publishPost.addEventListener("submit", event => {
-            event.preventDefault();
-            const txt = rootElement.querySelector("#box-caption").value;
-            // este elemento é o estrutural da page e o que vai ser carregando com os dados
-            const post = {
-                uid:"",
-                caption: txt,
-                likes: 0,
-                time:"",
+            <figure class='logo-texto'>
+              <img class='logo-texto-img' src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_J7Fc3jl7CcRUUKD6gzC0CCI8Sh-E3hndPw&usqp=CAU'>
+            </figure>
+            <div id='navigation-wrapper-home' class='navigation-wrapper disable-display'>
+              <div class='close-icon-wrapper'>
+                <a href='javascript:void(0);' class='icon-x' id='close-menu-icon-home' class='close-menu-icon'>
+                  <i class='fa fa-times'></i>
+                </a>
+              </div>
+              <nav class='top-menu'>
+                
+                <li>
+                  <div id='sign-out' class='menu-hamburger-btn-style'>Sair</div>
+                </li>
+              </nav>
+            </div>
+            </div>
+          </header>
+          <div class='big-box'>
+          <div class='left-side'>
+            <div id='profile-box' class='profile-box'>  
+              <div class= 'user-informations'>
+                <div id='name-information' class='name-information'></div>
+              </div>
+           </div>
+          </div>
+          <div class='right-side'>
+            <div class='post-box'>
+              <form id='post-send-form'>
+                <textarea id='post' class='post-text' placeholder='Como você está?' type='text' required></textarea>
+                <div class='all-buttons'>
+                  <div class='privacy-wrapper' id='privacy-options'>
+                    <div class='public-option icon-style'>
+                    <i class="fa fa-lock" aria-hidden="true"></i>
+                      <input type='radio' name='privacy' id='private-option' class='privacy-options' value='private'>
+                    </div>
+                    <div class='private-option  icon-style'>
+                      <i class="fa fa-globe" aria-hidden="true"></i>
+                      <input type='radio' name='privacy' id='public-option' class='privacy-options' checked='true' value='public'>
+                    </div>
+                  </div>
+                  <button id='send-btn' class='btn-style'>Publicar</button>
+                </div>
+              </form>
+            </div>
+            <div id='all-posts'></div>
+            </div>
+          </div>
+          </div>
+          `;
+      
+        const newPost = (post) => {
+          const postElement = document.createElement('div');
+      
+          const date = new Date(post.time.seconds * 1000);
+      
+          let privacySymbol = '';
+          if (post.public) {
+            privacySymbol = "<i class='fa fa-globe icon-style'></i>";
+          } else {
+            privacySymbol = "<i class='fa fa-lock icon-style'></i>";
+          }
+      
+          let deleteButton = '';
+          let editButton = '';
+          let privacyOptionButton = '';
+      
+          const user = firebase.auth().currentUser;
+          if (post.userUid === user.uid) {
+            deleteButton = `<button id='close-posted-box' class='close-box' data-id='${post.id}'><i class='fa fa-times'></i></button>`;
+            editButton = `<button class='btn-edit-post icon-style'><i class='fa fa-pencil'></i></button>`;
+            privacyOptionButton = `<form class='privacy-wrapper' id='privacy-options'>
+              <div class='public-option icon-style'>
+                <i class='fa fa-lock'></i>
+                <input type='radio' name='privacy' id='private-option' class='privacy-options' value='private'>
+              </div>
+              <div class='private-option icon-style'>
+                <i class='fa fa-globe'></i>
+                <input type='radio' name='privacy' id='public-option' class='privacy-options' checked='true' value='public'>
+              </div>
+            </form>`;
+          }
+      
+          postElement.innerHTML = `
+            <div class='posted-box'>
+              <div class='posted-elements'>
+                <div class='delete-wrapper'>${deleteButton}</div>
+                <div class='published-by'>${privacySymbol}
+                  <div class='by-line'>&nbsp${post.user}</div>
+                  <div class='date-style'> ${date.toLocaleString('pt-BR')}</div> 
+                </div>
+                <div class='posted-content'>
+                  <div class='posted-text' id='all-posts'>${post.text}</div>
+                  <div class='posted-text posted-text-editor display-none'>
+                    <input type='text' value='${post.text}'/>
+                  </div>
+                  <div class='posted-text-edit-button'>${editButton}</div>
+                </div>
+                <div class='edit-privacity-post display-none'>${privacyOptionButton}</div>
+                <div class='interaction-space'>
+                  <div class='btn-space'>
+                    <div class='like-space'>
+                      <div class='like-number'>${post.likes}</div>
+                      <a id='like-btn' class='like-btn'><i class="fa fa-heart-o"></i></a>
+                    </div>
+                    <button id='comment-btn' class='btn-style btn-comment'>Comentar</button>
+                  </div>
+                </div>
+              </div>
+              <div class='space-comment'>${post.comments.map(comment => commentPosted(comment)).join('')}</div>
+            </div>
+        `;
+          return postElement;
+        };
+      
+        const postSendForm = container.querySelector('#post-send-form');
+        const postText = postSendForm.querySelector('#post');
+        const postPublic = postSendForm.querySelector('#public-option');
+        const sendPostBtn = postSendForm.querySelector('#send-btn');
+        const allPosts = container.querySelector('#all-posts');
+        const btnSignOut = container.querySelector('#sign-out');
+        //const btnProfile = container.querySelector('#btn-profile');
+      
+        function profile(name) {
+          container.querySelector('#name-information').innerHTML = `${name}`;
+        }
+      
+        loggedUser(profile);
+      
+        const isPostAllowed = (post) => {
+          const currentUser = firebase.auth().currentUser;
+          if (!currentUser) {
+            return false;
+          }
+          if (post.userUid === currentUser.uid) {
+            return true;
+          }
+          return post.public;
+        };
+      
+        const editTextPost = (post, postElement) => {
+          const postedElem = postElement.querySelector('.posted-text');
+          const editElement = postElement.querySelector('.posted-text-editor');
+          const iconElem = postElement.querySelector('.btn-edit-post > i');
+          const newText = editElement.querySelector('input').value;
+          const privacyIcon = postElement.querySelector('.edit-privacity-post');
+      
+          if (iconElem.classList.contains) {
+            const formPrivacy = postElement.querySelector('#privacy-options');
+            updatePost(post.id, newText, formPrivacy.privacy.value).then(() => {
+              createPost.readPosts(postTemplate);
+            }).catch(() => {
+              growl({ text: 'Ocorreu um erro. Tente novamente!', type: 'error', fadeAway: true, fadeAwayTimeout: 3000 });
+            });
+          } else {
+            postedElem.classList.toggle('display-none');
+            editElement.classList.toggle('display-none');
+            privacyIcon.classList.toggle('display-none');
+            iconElem.classList.toggle('fa-pencil');
+            iconElem.classList.toggle('fa-check');
+          }
+        };
+      
+        const postTemplate = (array) => {
+          allPosts.innerHTML = '';
+          array.forEach((posts) => {
+            if (!isPostAllowed(posts)) {
+              return;
             }
-            //esse elemento é responsavel por criar os coleção
-            const postCollection = firebase.firestore().collection("form-post");
-            //esse elemento é responsavel por adicionar novos posts
-            const addPost = postCollection.add(post)
-            //essa promise tem como callback a função de carregarPost 
-            .then(res => {loadPost()}
-            ).catch()
-            
-            return rootElement;
+      
+            const postElements = newPost(posts);
+      
+            const btnDelete = postElements.querySelector('.close-box');
+            if (btnDelete) {
+              btnDelete.addEventListener('click', () => {
+                deletePost(posts.id);
+                postElements.innerHTML = '';
+              });
+            }
+            const btnEdit = postElements.querySelector('.btn-edit-post');
+            if (btnEdit) {
+              btnEdit.addEventListener('click', () => {
+                editTextPost(posts, postElements);
+              });
+            }
+            const btnLike = postElements.querySelector('.like-btn');
+            btnLike.addEventListener('click', (event) => {
+              event.preventDefault();
+              updateLike(posts.id).then(() => {
+                createPost.readPosts(postTemplate);
+              }).catch(() => {
+                growl({ text: 'Ocorreu um erro. Tente novamente!', type: 'error', fadeAway: true, fadeAwayTimeout: 3000 });
+              });
+            });
+            const btnComment = postElements.querySelector('.btn-comment');
+            btnComment.addEventListener('click', (event) => {
+              event.preventDefault();
+              const spaceComment = postElements.querySelector('.space-comment');
+              const commentElements = newComment(posts.id);
+              spaceComment.appendChild(commentElements);
+            });
+            allPosts.appendChild(postElements);
+          });
+        };
+      
+        createPost.readPosts(postTemplate);
+      
+        const commentPosted = (text) => {
+          const templateCommentPosted = `
+            <div class='commented-wrapper'>
+              <div class='space-commented'>${text}</div>
+            </div>
+          `;
+          return templateCommentPosted;
+        };
+      
+        const newComment = (id) => {
+          const templateComment = document.createElement('div');
+          templateComment.innerHTML = `
+            <div class='space-wrapper'>
+              <textarea id='write-space-comment' class='write-space-comment' type='text' required cols='25' placeholder='comente aqui'></textarea>
+              <div class='comment-btn-space'>
+                <button class='btn-save-comment'><i class="fa fa-comments" aria-hidden="true"></i></button>
+              </div>
+              <div class='comment-posted'></div>
+            </div>
+          `;
+      
+          const btnSaveComment = templateComment.querySelector('.btn-save-comment');
+      
+          btnSaveComment.addEventListener('click', () => {
+            const subComment = templateComment.querySelector('.write-space-comment').value;
+            updateComments(id, subComment).then(() => {
+              createPost.readPosts(postTemplate);
+            }).catch(() => {
+              growl({ text: 'Falha ao enviar comentário.', type: 'error', fadeAway: true, fadeAwayTimeout: 3000 });
+            });
+          });
+      
+          return templateComment;
+        };
+      
+        sendPostBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          let isPublic = false;
+          if (postPublic.checked) {
+            isPublic = true;
+          }
+          const returnPosts = createPost.insertPosts(postText.value, isPublic);
+          returnPosts
+            .then(() => {
+              createPost.readPosts(postTemplate);
+            }).catch(error => error);
+      
+          document.getElementById('post').value = '';
         });
-    
-    function printPosts(post) {
-        const templatePost =`
-        <p>Foi filhin ${post.data().caption}</p>`
-        document.getElementById("feed-post").innerHTML += templatePost
-    }
-    function loadPost() {
-        const postCollection = firebase.firestore().collection("form-post");
-        postCollection.get().then(snapshot => {
-            document.querySelector("#feed-post").innerHTML = "";
-            snapshot.forEach( post=> {
-            printPosts(post);
-        })
-    })
-}
-    
-/*<h1 class="logo-tml">coletivo</h1>
-        </header>
-                <main class="main-tml">
-                    <section class="user"> 
-                        <figure class="user-avatar">
-                            <img src="images/user.png">
-                        </figure> 
-                        <h2 class="user-name" id="userName">userName</h2>
-                        <p class="posted-at">Postado em : 05 de Dezembro de 2021 00:00 horas</p>
-                    </section>
-                    <section class="post">
-                        <figure class="post-img">
-                            <img src="https://pbs.twimg.com/media/D9YxIubWsAAn9QH?format=jpg&name=large">
-                        </figure>
-                        <div class="post-captions">
-                            <h3>userName</h3>
-                            <p>captions</p>
-                        </div>
-                    </section>
-                </main>*/ 
+      
+        btnSignOut.addEventListener('click', (event) => {
+          event.preventDefault();
+          signOut();
+        });
+      
+       
+      
+        const navigationWrapperHome = container.querySelector('#navigation-wrapper-home');
+        const homeHamburgerIcon = container.querySelector('#top-menu-home-icon');
+      
+        function toggleMenu() {
+          navigationWrapperHome.classList.toggle('disable-display');
+          homeHamburgerIcon.classList.toggle('hide-visibility');
+        }
+      
+        container.querySelector('#menu-icon-home').addEventListener('click', toggleMenu);
+        container.querySelector('#close-menu-icon-home').addEventListener('click', toggleMenu);
+      
+        return container;
+      };

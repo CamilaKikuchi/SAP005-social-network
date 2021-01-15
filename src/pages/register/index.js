@@ -19,7 +19,7 @@ export const Register = () => {
                     <input type="email" id="email" placeholder="Email" required autocomplete="off">
                     <input id="passwordFirst" type="password" placeholder="Digite uma senha 6 digitos" required autocomplete="off">
                     <input id="passwordSecond" type="password" placeholder="Confirme sua senha" required autocomplete="off">              
-                    <input type="date" id="month" placeholder="Mês" max="2006-12-31">
+                    <input type="date" id="month" placeholder="Mês" max="1990-12-31">
                     <button id="btn">Cadastrar</button>
                     <button id="loginBtn">Login</button>            
                 </div>
@@ -51,8 +51,8 @@ export const Register = () => {
 
             firebase.auth().createUserWithEmailAndPassword(emailUser, passwordFirst)
                 .then((user) => {
-                    console.log("cadastrado")
-                    rootElement.querySelector("#finalized").innerHTML = `<h1>Sucesso! ${userName[0].toUpperCase() + userName.slice(1)}, seu cadastro foi efetuado.</h1>`
+                    
+                    rootElement.querySelector("#finalized").innerHTML = `<h1>Sucesso! ${userName[0].toUpperCase() + userName.slice(1)}, agora você faz parte do coletivo.</h1>`
 
 
                 })
