@@ -18,11 +18,11 @@ export const Timeline = () => {
           <section id='top-menu-home-wrapper' class='top-menu-wrapper'>
             <div id='top-menu-home-icon' class='top-menu-icon'>
               <a href='javascript:void(0);' id='menu-icon-home' class='icon'>
-              <i class="fa fa-bars"</i>
+              
               </a>
             </div>
             <figure class='logo-texto'>
-              <img class='logo-texto-img' src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_J7Fc3jl7CcRUUKD6gzC0CCI8Sh-E3hndPw&usqp=CAU'>
+              <h1>Bem vinde ao Coletivo</h1>
             </figure>
             <div id='navigation-wrapper-home' class='navigation-wrapper disable-display'>
               <div class='close-icon-wrapper'>
