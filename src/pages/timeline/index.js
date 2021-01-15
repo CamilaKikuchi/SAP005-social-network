@@ -1,4 +1,4 @@
-import {
+  import {
     loggedUser,
     createPost,
     signOut,
@@ -15,7 +15,7 @@ export const Timeline = () => {
         container.className = ('feed-wrapper');
       
         container.innerHTML = `
-          <header id='top-menu-home-wrapper' class='top-menu-wrapper'>
+          <section id='top-menu-home-wrapper' class='top-menu-wrapper'>
             <div id='top-menu-home-icon' class='top-menu-icon'>
               <a href='javascript:void(0);' id='menu-icon-home' class='icon'>
               <i class="fa fa-bars"</i>
@@ -38,7 +38,7 @@ export const Timeline = () => {
               </nav>
             </div>
             </div>
-          </header>
+          </section>
           <div class='big-box'>
           <div class='left-side'>
             <div id='profile-box' class='profile-box'>  
